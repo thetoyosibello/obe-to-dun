@@ -18,9 +18,9 @@ SRC = HERE.parent / "build"
 
 # ---------------------------------------------------------------- edit these
 SITE_URL   = "https://thetoyosibello.github.io/obe-to-dun"
-BUY_URL    = "https://payhip.com/maamimade"
+BUY_URL    = "https://payhip.com/b/ZHtdW"            # the product, not the storefront
 FORM_ACTION = ""                                        # email provider form action
-PRICE      = "14.99"
+PRICE      = "33.55"                                # must match the live Payhip price
 HANDLE     = "@maamimade"
 # ---------------------------------------------------------------------------
 
