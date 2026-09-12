@@ -1,0 +1,406 @@
+#!/usr/bin/env python3
+"""MaamiMade free recipe page. The Pinterest destination that sells OBE TO DUN underneath.
+
+Build:  python3 page.py        ->  index.html  (+ img/ and fonts/ copied in)
+
+Doctrine (see memory: mama-stew-business): teach the method, sell the secret.
+This page publishes the method, the fry theory, the substitutions and every failure
+mode. It does NOT publish the 80/15/5 ratio, Aby's tomato rule, the Orishirishi
+protein playbook or the storage secret. Those are the book.
+
+House rule: zero em dashes and zero en dashes in prose. Asserted at the bottom.
+"""
+from pathlib import Path
+import re, shutil
+
+HERE = Path(__file__).parent
+SRC = HERE.parent / "build"
+
+# ---------------------------------------------------------------- edit these
+SITE_URL   = "https://thetoyosibello.github.io/obe-to-dun"
+BUY_URL    = "https://payhip.com/maamimade"
+FORM_ACTION = ""                                        # email provider form action
+PRICE      = "14.99"
+HANDLE     = "@maamimade"
+# ---------------------------------------------------------------------------
+
+C = dict(ink="#2b211d", muted="#6e625b", oxblood="#7a2a20", rust="#a63a2c",
+         gold="#c08a3e", peach="#e8c9a8", cream="#fdf9f5", line="#e8ded5")
+
+CSS = """
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Karla","Helvetica Neue",Arial,sans-serif;color:%(ink)s;
+  background:%(cream)s;font-size:18px;line-height:1.75;-webkit-font-smoothing:antialiased}
+img{max-width:100%%;display:block}
+a{color:%(rust)s}
+.wrap{max-width:720px;margin:0 auto;padding:0 22px}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.15;
+  letter-spacing:-.015em;margin:0}
+h1{font-size:clamp(34px,7vw,54px)}
+h2{font-size:clamp(25px,4.5vw,34px);margin:54px 0 14px}
+h3{font-size:20px;color:%(oxblood)s;margin:26px 0 4px;letter-spacing:0}
+p{margin:0 0 16px}
+.eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:%(rust)s;
+  font-weight:700;margin:0 0 12px}
+.lede{font-family:"Fraunces",Georgia,serif;font-size:21px;line-height:1.6;color:#4a3d36}
+.muted{color:%(muted)s;font-size:16px}
+
+header.top{border-bottom:1px solid %(line)s;background:#fff}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;
+  height:58px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+header.top a{color:%(ink)s;text-decoration:none}
+
+.hero{background:#fff;padding:0 0 40px;border-bottom:1px solid %(line)s}
+.hero .shot{width:100%%;height:min(56vw,420px);object-fit:cover}
+.hero h1{margin:34px 0 0}
+.hero .sub{font-size:14px;letter-spacing:.18em;text-transform:uppercase;
+  color:%(muted)s;margin:14px 0 20px}
+.btnrow{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 0}
+.btn{display:inline-block;background:%(oxblood)s;color:#fff;text-decoration:none;
+  padding:14px 26px;border-radius:2px;font-weight:700;font-size:15px;
+  letter-spacing:.06em;text-transform:uppercase}
+.btn.ghost{background:transparent;color:%(oxblood)s;border:1px solid %(oxblood)s}
+.btn:hover{opacity:.9}
+
+figure{margin:30px 0}
+figure figcaption{font-size:14px;color:%(muted)s;margin-top:9px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin:26px 0}
+.steps figure{margin:0}
+.steps img{aspect-ratio:4/3;object-fit:cover}
+.steps .n{font-family:"Fraunces",Georgia,serif;font-size:13px;color:%(gold)s;
+  letter-spacing:.2em;margin-top:8px}
+
+.card{background:#fff;border:1px solid %(line)s;border-left:3px solid %(rust)s;
+  padding:26px 26px 10px;margin:34px 0}
+.card h3{margin-top:0}
+
+ul.plain{list-style:none;padding:0;margin:0 0 18px}
+ul.plain li{position:relative;padding-left:20px;margin-bottom:9px}
+ul.plain li:before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;
+  background:%(gold)s;border-radius:50%%}
+
+ol.method{counter-reset:s;list-style:none;padding:0;margin:0}
+ol.method li{counter-increment:s;position:relative;padding-left:52px;margin-bottom:26px}
+ol.method li:before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:-2px;
+  font-family:"Fraunces",Georgia,serif;font-size:22px;color:%(peach)s;font-weight:600}
+ol.method b{color:%(oxblood)s}
+
+.capture{background:%(oxblood)s;color:#fff;padding:46px 0;margin:64px 0 0}
+.capture h2{color:#fff;margin:0 0 10px}
+.capture p{color:#f0ddd2}
+.capture form{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.capture input{flex:1 1 240px;padding:15px 16px;border:0;border-radius:2px;font-size:16px;
+  font-family:inherit}
+.capture button{background:%(gold)s;color:#2b211d;border:0;padding:15px 28px;border-radius:2px;
+  font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+  font-family:inherit}
+.capture .fine{font-size:13px;color:#d8bfb2;margin:12px 0 0}
+
+.offer{background:#fff;border-top:1px solid %(line)s;border-bottom:1px solid %(line)s;
+  padding:56px 0;margin:0}
+.offer .grid{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:34px;align-items:start}
+.offer .cov{box-shadow:0 18px 40px rgba(43,33,29,.22)}
+.price{font-family:"Fraunces",Georgia,serif;font-size:30px;color:%(oxblood)s;margin:0 0 4px}
+@media(max-width:640px){.offer .grid{grid-template-columns:1fr}.offer .cov{max-width:230px}}
+
+footer{padding:46px 0 70px;font-size:14px;color:%(muted)s}
+footer .wrap{border-top:1px solid %(line)s;padding-top:26px}
+""" % C
+
+TROUBLE = [
+ ("It tastes sour or sharp.",
+  "Tomato is almost always the reason, and it is the single most common fault in a Nigerian stew. "
+  "Either there is too much of it in the base, or it has not been fried long enough to lose its "
+  "raw edge. Keep frying and taste again before you add anything."),
+ ("It tastes watery.",
+  "Keep cooking it uncovered, or partly covered, until it reduces. Resist adding more stock "
+  "unless you genuinely need the liquid."),
+ ("It tastes bitter.",
+  "The peppers probably need more cooking, or something has caught and over charred. Keep frying "
+  "gently and taste again. Do not try to bury bitterness under more seasoning, because it does not work."),
+ ("It is too spicy.",
+  "Increase the volume of the mild pepper and tomato base, add more cooked protein, and let it "
+  "simmer. Adding salt will not help."),
+ ("It is too salty.",
+  "Dilute it with more unsalted pepper base or other unsalted ingredients. Water alone will thin "
+  "the stew without fixing the balance."),
+ ("It tastes flat.",
+  "Taste before you reach for anything. It often just needs more time to reduce and fry. After "
+  "that, adjust salt, stock seasoning, soy sauce or acidity carefully and one at a time."),
+ ("It looks pale.",
+  "It may want more long red pepper, or simply more reduction. Pepper colour varies naturally, so "
+  "do not chase colour at the expense of flavour."),
+ ("It is sticking.",
+  "Lower the heat and stir up from the bottom. A heavy pot helps a great deal, and a reducing stew "
+  "should not be left alone for long."),
+]
+
+INGREDIENTS = [
+ "6 long red peppers, tatashe. Broad, fleshy Romano or Ramiro sweet peppers, not thin chillies",
+ "2 to 4 scotch bonnet, rodo, depending on how hot you want it",
+ "1 can of plum tomatoes, or 3 fresh plum tomatoes",
+ "2 onions, one for the base and one for the pot",
+ "1 thumb of ginger and 3 cloves of garlic",
+ "1kg of beef, or chicken, or a mix of whatever you like",
+ "2 stock cubes, Knorr chicken or similar",
+ "1 teaspoon of curry powder and 1 teaspoon of dried thyme",
+ "Maggi liquid seasoning, to taste",
+ "Vegetable oil, a generous amount",
+ "Salt",
+]
+
+METHOD = [
+ ("Season and cook your protein first.",
+  "Put your meat in a pot with half an onion, your stock cubes, thyme, curry powder and salt. "
+  "Add just enough water to cover it and cook it until it is tender. Do not pour the liquid away. "
+  "That stock is the reason this stew will taste like it has been cooking all day."),
+ ("Blend the pepper base.",
+  "Long red pepper first and most of it, then your scotch bonnet, one onion, your ginger and "
+  "garlic, and the tomato last and least. Blend it with the stock you saved rather than with "
+  "water. Smooth for a classic texture, a little rough if that is how you grew up eating it. "
+  "Both are correct."),
+ ("Reduce the base before it ever sees oil.",
+  "Pour the blend into a dry pot and let it cook down until most of the water has gone. This is "
+  "the step almost everyone skips, and it is why their stew never thickens properly later."),
+ ("Brown your onion in the oil.",
+  "Fresh pot, generous oil, and either fry a half onion until it is deeply browned and lift it "
+  "out, which is my mother's way, or dice it and soften it, which is quicker. You are cooking "
+  "for the flavour the onion leaves behind."),
+ ("Fry the base properly.",
+  "Add the reduced base to the hot oil and let it fry, stirring now and then, until the raw smell "
+  "disappears and the colour darkens. Do not rush this. It takes as long as it takes, and it is "
+  "the single biggest difference between a stew and a pepper sauce."),
+ ("Bring it together and taste.",
+  "Fold in your cooked protein, let it sit in the stew for a few minutes, then taste it and be "
+  "honest with yourself. A little more stock seasoning, a pinch more salt, or a splash of Maggi, "
+  "one at a time."),
+]
+
+def steps_row(items):
+    out = ['<div class="steps">']
+    for i, (img, cap) in enumerate(items, 1):
+        out.append(f'<figure><img src="img/{img}.jpg" alt="{cap}">'
+                   f'<div class="n">STEP {i:02d}</div>'
+                   f'<figcaption>{cap}</figcaption></figure>')
+    out.append('</div>')
+    return "".join(out)
+
+def build():
+    form = f'<form action="{FORM_ACTION}" method="post">' if FORM_ACTION else \
+           '<form onsubmit="alert(\'Connect your email provider in page.py (FORM_ACTION).\');return false">'
+
+    schema = """{
+ "@context":"https://schema.org/","@type":"Recipe",
+ "name":"Nigerian Stew (Nigerian Red Stew)",
+ "image":["%(u)s/img/orishirishi.jpg"],
+ "author":{"@type":"Person","name":"Toyosi, MaamiMade"},
+ "description":"The pepper led Nigerian stew my mother has cooked for forty years, with the method underneath it and every way it can go wrong.",
+ "recipeCuisine":"Nigerian","recipeCategory":"Main","recipeYield":"6 servings",
+ "prepTime":"PT20M","cookTime":"PT1H20M","totalTime":"PT1H40M",
+ "keywords":"nigerian stew, nigerian red stew, obe ata, nigerian beef stew, african stew",
+ "recipeIngredient":[%(ing)s],
+ "recipeInstructions":[%(ins)s]
+}""" % dict(
+        u=SITE_URL,
+        ing=",".join('"%s"' % i.replace('"', "'") for i in INGREDIENTS),
+        ins=",".join('{"@type":"HowToStep","name":"%s","text":"%s"}'
+                     % (h.replace('"', "'"), b.replace('"', "'")) for h, b in METHOD),
+    )
+
+    html = f"""<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nigerian Stew Recipe (Nigerian Red Stew) | MaamiMade</title>
+<meta name="description" content="How to make Nigerian stew the way my mother makes it. The pepper led base, the fry stage almost everyone stops too early, and what to do when your pot goes sour, watery or bitter.">
+<link rel="canonical" href="{SITE_URL}/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nigerian Stew, and why yours goes sour">
+<meta property="og:description" content="The pepper led base, the fry stage almost everyone stops too early, and every way a pot of Nigerian stew can go wrong.">
+<meta property="og:image" content="{SITE_URL}/pins/pin_hero.jpg">
+<meta property="og:site_name" content="MaamiMade">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="fonts.css">
+<style>{CSS}</style>
+<script type="application/ld+json">{schema}</script>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a href="/">MaamiMade</a><a href="#book">The book</a>
+</div></header>
+
+<section class="hero">
+  <img class="shot" src="img/orishirishi.jpg" alt="A pot of Nigerian stew">
+  <div class="wrap">
+    <div class="sub" style="margin-top:26px">Nigerian &middot; Serves 6 &middot; 1 hour 40</div>
+    <h1>Nigerian Stew</h1>
+    <div class="sub">Nigerian red stew &middot; obe ata</div>
+    <p class="lede">Anyone can make Nigerian stew. Almost nobody makes it like their mum.
+    This is how my mother Aby makes hers, and more usefully, this is why yours comes out
+    sour, or watery, or somehow just not right.</p>
+    <div class="btnrow">
+      <a class="btn" href="#recipe">Go to the recipe</a>
+      <a class="btn ghost" href="#book">Get the full book</a>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+<h2>Why most stews go wrong</h2>
+<p>The fault is hardly ever the ingredients. Everyone buys the same peppers. The fault is
+almost always one of three things, and once you can name them you can fix them in your own
+kitchen without looking anything up.</p>
+<ul class="plain">
+  <li><b>Tomato took over.</b> It goes in last and least. When it leads, the stew turns sharp
+  and sour and no amount of seasoning will bury it.</li>
+  <li><b>The base never reduced.</b> Water has to leave before oil goes in, or you are making
+  a pepper sauce and calling it a stew.</li>
+  <li><b>The fry stopped too early.</b> This is the one. It is not a five minute step, and it
+  is where the flavour actually develops.</li>
+</ul>
+
+<h2>The ideas underneath the recipe</h2>
+<h3>The pepper leads, the tomato follows</h3>
+<p>Long red tatashe peppers make up the bulk of the base and tomato sits quietly underneath.
+That is what gives the stew its sweet, deep, pepper forward character instead of the sharp red
+taste people end up with when tomato takes over. My mother holds this as a fixed proportion
+rather than a loose idea, which is the part of this that is genuinely hers.</p>
+<h3>The stock does double duty</h3>
+<p>The seasoned liquid left from cooking your protein becomes the liquid you blend your
+peppers with. Nothing good gets poured away, and the flavour is layered from the beginning
+rather than added at the end.</p>
+<h3>The protein is seasoned like it is the main event</h3>
+<p>Your meat, turkey or fish is cooked with its own aromatics and seasoning first. By the time
+it meets the stew, both the protein and the stock are already carrying flavour of their own.</p>
+<h3>The final fry is where it happens</h3>
+<p>When the blended base hits hot oil, time and heat change it completely. What you are after
+is a cooked, concentrated stew, not a watery pepper sauce that never quite came together.</p>
+
+<figure>
+  <img src="img/ingredient_spread.jpg" alt="Tatashe peppers, scotch bonnet, onions and tomatoes">
+  <figcaption>Tatashe is a broad, fleshy Romano or Ramiro sweet pepper, thick at the shoulder
+  and 16 to 20cm long. If what you have bought is thin like a cayenne, it is shombo, and it
+  will be far hotter and far less sweet.</figcaption>
+</figure>
+
+<h2 id="recipe">What you need</h2>
+<p class="muted">This is the everyday version, scaled for a normal pot on a normal evening.</p>
+<ul class="plain">
+{"".join(f"<li>{i}</li>" for i in INGREDIENTS)}
+</ul>
+
+<div class="card">
+<h3>If you are shopping in the UK</h3>
+<p>Tatashe is sold as Romano or Ramiro peppers in most supermarkets, and as long red pepper in
+African and Asian shops, which is usually cheaper and better. Red bell pepper will do at a push,
+though it is sweeter and thinner in flavour. Scotch bonnet is worth a trip to the African shop
+because the supermarket ones are often milder than they look.</p>
+</div>
+
+<h2>How to make it</h2>
+{steps_row([("step_peppers_can","Peppers, scotch bonnet and tomato, ready for the blender"),
+            ("step_blender_full","Everything in together, with the onion, ginger and garlic"),
+            ("step_blended","Blended with your reserved stock, smooth or a little rough")])}
+
+<ol class="method">
+{"".join(f"<li><b>{h}</b><br>{b}</li>" for h, b in METHOD)}
+</ol>
+
+<figure>
+  <img src="img/fry_stage.jpg" alt="The pepper base frying down and darkening">
+  <figcaption>How to know the fry is finished: the colour darkens, the volume drops, and a
+  spoon dragged through the middle leaves a furrow that holds its shape for a second before it
+  closes. If it floods straight back, keep going.</figcaption>
+</figure>
+
+<h2>When the pot does not go to plan</h2>
+<p class="lede">Every one of these has happened in our kitchen. None of them are fatal.</p>
+{"".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in TROUBLE)}
+
+<h2>What to eat it with</h2>
+<p>One base, many dinners. Rice is the obvious one, and the one most people mean when they say
+stew. Boiled yam takes it beautifully. Spaghetti is what half of Nigeria actually eats on a
+weeknight. Beans, plantain, potatoes and any swallow all work, and the stew does not change at
+all, which is the point of cooking a proper pot of it.</p>
+<figure>
+  <img src="img/plated_rice.jpg" alt="Nigerian stew served over white rice">
+</figure>
+
+</main>
+
+<section class="capture"><div class="wrap">
+  <div class="eyebrow" style="color:{C['peach']}">Free, one page</div>
+  <h2>The Stew Rescue Card</h2>
+  <p>Every fault on this page, what causes it and how to fix it, on one printable page for
+  the kitchen wall. Send it to yourself and it is there the next time a pot goes wrong.</p>
+  {form}
+    <input type="email" name="email" placeholder="Your email address" required>
+    <button type="submit">Send me the card</button>
+  </form>
+  <p class="fine">One email with the card, then occasionally something else worth cooking.
+  Leave whenever you like.</p>
+</div></section>
+
+<section class="offer" id="book"><div class="wrap">
+  <div class="grid">
+    <img class="cov" src="img/cover_front.jpg" alt="OBE TO DUN, The Art of Mother's Nigerian Stew">
+    <div>
+      <div class="eyebrow">The book</div>
+      <h2 style="margin-top:0">OB&Eacute; T&Oacute; D&Ugrave;N</h2>
+      <p class="lede">The page you just read is the method. The book is my mother's version
+      of it, written down properly for the first time.</p>
+      <p>Everything above will make you a good pot of Nigerian stew. What it does not give
+      you is the part that makes hers taste like hers.</p>
+      <ul class="plain">
+        <li>The <b>80 / 15 / 5 pepper rule</b>, the fixed proportion the whole stew rests on</li>
+        <li><b>Aby's tomato rule</b>, and the exact point where too much of it ruins a pot</li>
+        <li><b>Orishirishi</b>, the assorted pot she actually cooks: smoked turkey, brokoto,
+        beef, fresh turkey, chicken and panla, and what each one gives the stew</li>
+        <li><b>Aby's storage secret</b>, which is why her meat never turns soft and soggy</li>
+        <li>Seventeen chapters, photographed at every stage, plus a printable shopping
+        checklist and a one page recipe card</li>
+      </ul>
+      <p class="price">&pound;{PRICE}</p>
+      <p class="muted" style="margin-top:0">Instant PDF download, yours to keep</p>
+      <a class="btn" href="{BUY_URL}">Get the book</a>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>Written in London by Toyosi, from my mother Aby's kitchen. {HANDLE}</p>
+  <p class="muted">Cook generously. Taste deliberately. Waste nothing delicious.</p>
+</div></footer>
+
+</body></html>"""
+    return html
+
+
+def main():
+    (HERE / "img").mkdir(exist_ok=True)
+    for name in ["cover_hero", "orishirishi", "ingredient_spread", "step_peppers_can", "step_blender_full",
+                 "step_blended", "fry_stage", "plated_rice"]:
+        shutil.copy(SRC / "img" / f"{name}.jpg", HERE / "img" / f"{name}.jpg")
+    shutil.copy(HERE.parent / "storefront" / "cover_front.jpg", HERE / "img" / "cover_front.jpg")
+    shutil.copy(SRC / "fonts.css", HERE / "fonts.css")
+    if (HERE / "fonts").exists():
+        shutil.rmtree(HERE / "fonts")
+    shutil.copytree(SRC / "fonts", HERE / "fonts")
+
+    html = build()
+    (HERE / "index.html").write_text(html, encoding="utf-8")
+
+    prose = re.sub(r"<[^>]+>", " ", html)
+    prose = re.sub(r"\{[^}]*\}", " ", prose)
+    print("em dash in prose :", prose.count("—"))
+    print("en dash in prose :", prose.count("–"))
+    print("bytes            :", len(html))
+    print("wrote            :", HERE / "index.html")
+
+
+if __name__ == "__main__":
+    main()
