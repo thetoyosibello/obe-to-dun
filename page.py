@@ -19,7 +19,8 @@ SRC = HERE.parent / "build"
 # ---------------------------------------------------------------- edit these
 SITE_URL   = "https://thetoyosibello.github.io/obe-to-dun"
 BUY_URL    = "https://payhip.com/b/ZHtdW"            # the product, not the storefront
-FORM_ACTION = ""                                        # email provider form action
+FORM_ACTION = ""   # an email provider's form action, renders an inline email field
+MAGNET_URL  = "https://payhip.com/b/4yfa7"   # the free Payhip product that delivers the card
 PRICE      = "17.17"                                # must match the live Payhip price
 HANDLE     = "@maamimade"
 # ---------------------------------------------------------------------------
@@ -95,6 +96,7 @@ ol.method b{color:%(oxblood)s}
 .capture button{background:%(gold)s;color:#2b211d;border:0;padding:15px 28px;border-radius:2px;
   font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
   font-family:inherit}
+.capture .btn.gold{background:%(gold)s;color:#2b211d}
 .capture .fine{font-size:13px;color:#d8bfb2;margin:12px 0 0}
 
 .offer{background:#fff;border-top:1px solid %(line)s;border-bottom:1px solid %(line)s;
@@ -187,8 +189,17 @@ def steps_row(items):
     return "".join(out)
 
 def build():
-    form = f'<form action="{FORM_ACTION}" method="post">' if FORM_ACTION else \
-           '<form onsubmit="alert(\'Connect your email provider in page.py (FORM_ACTION).\');return false">'
+    if FORM_ACTION:
+        capture = (f'<form action="{FORM_ACTION}" method="post">'
+                   '<input type="email" name="email_address" placeholder="Your email address" required>'
+                   '<button type="submit">Send me the card</button></form>')
+    elif MAGNET_URL:
+        capture = (f'<div class="btnrow"><a class="btn gold" href="{MAGNET_URL}">'
+                   'Get the rescue card</a></div>')
+    else:
+        capture = ('<form onsubmit="alert(\'Set FORM_ACTION or MAGNET_URL in page.py.\');'
+                   'return false"><input type="email" placeholder="Your email address" required>'
+                   '<button type="submit">Send me the card</button></form>')
 
     schema = """{
  "@context":"https://schema.org/","@type":"Recipe",
@@ -337,12 +348,10 @@ all, which is the point of cooking a proper pot of it.</p>
   <h2>The Stew Rescue Card</h2>
   <p>Every fault on this page, what causes it and how to fix it, on one printable page for
   the kitchen wall. Send it to yourself and it is there the next time a pot goes wrong.</p>
-  {form}
-    <input type="email" name="email" placeholder="Your email address" required>
-    <button type="submit">Send me the card</button>
-  </form>
-  <p class="fine">One email with the card, then occasionally something else worth cooking.
-  Leave whenever you like.</p>
+  {capture}
+  <p class="fine">Free, and no payment details. You give an email so the card can be sent
+  to you, and there is a tick box if you want the occasional note about something else
+  worth cooking.</p>
 </div></section>
 
 <section class="offer" id="book"><div class="wrap">

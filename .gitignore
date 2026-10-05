@@ -1,3 +1,5 @@
 _*.html
 .DS_Store
 __pycache__/
+magnet/*.pdf
+magnet/card_cover.jpg
