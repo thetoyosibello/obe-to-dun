@@ -4,6 +4,23 @@ Destination for every pin below: the free recipe page. One URL, four creatives.
 Pinterest rewards fresh IMAGES, not fresh URLs, so the same link repeated with different
 art is the correct play, not a problem.
 
+## STATUS as of 5 October 2026
+
+All four pins are posted from the thetoyosibello account, boards created:
+Nigerian Stew and Sauces, Nigerian Recipes.
+
+- Pin 1, keyword pin: PUBLISHED 5 Oct
+- Pin 2, sour stew: scheduled 6 Oct 12:00
+- Pin 3, eight faults: scheduled 7 Oct 12:00
+- Pin 4, step by step: scheduled 8 Oct 12:00
+
+Pins 2, 3 and 4 carry Pinterest's "Mark as AI-Modified" label, because the food
+photography is generated. Pin 1 was published before that decision and still needs the
+label adding by hand, in the pin's edit screen.
+
+Still to do by hand: claim the domain, run the Rich Pin validator, and set the profile
+to a business account.
+
 Before the first pin:
 1. Publish `index.html` and claim the domain in Pinterest settings (Settings, Claimed
    accounts). Claiming is what unlocks analytics per pin and attributes saves to you.
