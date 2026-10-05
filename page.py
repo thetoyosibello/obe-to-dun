@@ -280,16 +280,13 @@ kitchen without looking anything up.</p>
 That is what gives the stew its sweet, deep, pepper forward character instead of the sharp red
 taste people end up with when tomato takes over. My mother holds this as a fixed proportion
 rather than a loose idea, which is the part of this that is genuinely hers.</p>
-<h3>The stock does double duty</h3>
-<p>The seasoned liquid left from cooking your protein becomes the liquid you blend your
-peppers with. Nothing good gets poured away, and the flavour is layered from the beginning
-rather than added at the end.</p>
-<h3>The protein is seasoned like it is the main event</h3>
-<p>Your meat, turkey or fish is cooked with its own aromatics and seasoning first. By the time
-it meets the stew, both the protein and the stock are already carrying flavour of their own.</p>
 <h3>The final fry is where it happens</h3>
 <p>When the blended base hits hot oil, time and heat change it completely. What you are after
-is a cooked, concentrated stew, not a watery pepper sauce that never quite came together.</p>
+is a cooked, concentrated stew rather than a watery pepper sauce that never quite came
+together.</p>
+<p class="muted">Two more ideas sit underneath this stew, what the stock from your protein is
+really for and how my mother seasons the meat before it ever meets the pepper. Those are
+chapters, not paragraphs, and they are in the book.</p>
 
 <figure>
   <img src="img/ingredient_spread.jpg" alt="Tatashe peppers, scotch bonnet, onions and tomatoes">
@@ -330,7 +327,9 @@ because the supermarket ones are often milder than they look.</p>
 
 <h2>When the pot does not go to plan</h2>
 <p class="lede">Every one of these has happened in our kitchen. None of them are fatal.</p>
-{"".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in TROUBLE)}
+{"".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in TROUBLE[:3])}
+<p>Five more go wrong in a Nigerian pot: too spicy, too salty, flat, pale and sticking. They
+are all on the rescue card below, one page, free, meant for the kitchen wall.</p>
 
 <h2>What to eat it with</h2>
 <p>One base, many dinners. Rice is the obvious one, and the one most people mean when they say
@@ -346,8 +345,9 @@ all, which is the point of cooking a proper pot of it.</p>
 <section class="capture"><div class="wrap">
   <div class="eyebrow" style="color:{C['peach']}">Free, one page</div>
   <h2>The Stew Rescue Card</h2>
-  <p>Every fault on this page, what causes it and how to fix it, on one printable page for
-  the kitchen wall. Send it to yourself and it is there the next time a pot goes wrong.</p>
+  <p>All eight faults, including the five that are not on this page, what causes each one and
+  how to fix it. One printable page for the kitchen wall, there the next time a pot goes
+  wrong.</p>
   {capture}
   <p class="fine">Free, and no payment details. You give an email so the card can be sent
   to you, and there is a tick box if you want the occasional note about something else
