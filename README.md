@@ -18,3 +18,10 @@ link, email form action, price) and asserts that no em or en dash reaches the pr
 The page teaches the method, the fry theory, the UK substitutions and every failure mode.
 The signature pepper ratio, the tomato rule, the assorted protein playbook and the storage
 method are the book.
+
+## Pinterest
+
+Pinterest will not claim a site hosted on GitHub Pages, so a custom domain is needed
+before the claim and Rich Pins will work. Once the domain is pointed here, add a CNAME
+file, set `SITE_URL`, paste Pinterest's verification token into `PINTEREST_TAG`, and
+rebuild. The Recipe JSON-LD is already in place, so Rich Pins follow the claim.

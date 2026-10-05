@@ -21,6 +21,7 @@ SITE_URL   = "https://thetoyosibello.github.io/obe-to-dun"
 BUY_URL    = "https://payhip.com/b/ZHtdW"            # the product, not the storefront
 FORM_ACTION = ""   # an email provider's form action, renders an inline email field
 MAGNET_URL  = "https://payhip.com/b/4yfa7"   # the free Payhip product that delivers the card
+PINTEREST_TAG = ""  # the content value of Pinterest's domain verification meta tag
 PRICE      = "17.17"                                # must match the live Payhip price
 HANDLE     = "@maamimade"
 # ---------------------------------------------------------------------------
@@ -201,6 +202,9 @@ def build():
                    'return false"><input type="email" placeholder="Your email address" required>'
                    '<button type="submit">Send me the card</button></form>')
 
+    pin_tag = (f'\n<meta name="p:domain_verify" content="{PINTEREST_TAG}">'
+               if PINTEREST_TAG else "")
+
     schema = """{
  "@context":"https://schema.org/","@type":"Recipe",
  "name":"Nigerian Stew (Nigerian Red Stew)",
@@ -226,7 +230,7 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nigerian Stew Recipe (Nigerian Red Stew) | MaamiMade</title>
 <meta name="description" content="How to make Nigerian stew the way my mother makes it. The pepper led base, the fry stage almost everyone stops too early, and what to do when your pot goes sour, watery or bitter.">
-<link rel="canonical" href="{SITE_URL}/">
+<link rel="canonical" href="{SITE_URL}/">{pin_tag}
 <meta property="og:type" content="article">
 <meta property="og:title" content="Nigerian Stew, and why yours goes sour">
 <meta property="og:description" content="The pepper led base, the fry stage almost everyone stops too early, and every way a pot of Nigerian stew can go wrong.">
